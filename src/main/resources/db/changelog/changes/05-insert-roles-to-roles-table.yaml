@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-roles-to-roles-table
+      author: ihor-sydorenko
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: name
+                  value: "ROLE_MANAGER"
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: name
+                  value: "ROLE_CUSTOMER"
+

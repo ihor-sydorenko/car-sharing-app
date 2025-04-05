@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-test-users.yaml
+      author: ihor-sydorenko
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: email, value: "customer@exemple.com" }
+              - column: { name: password, value: "$2a$10$.tc/w4TOXUJS9OZLyGhp/eRDuCnlBCuVuhE0FW4MaET2CHpyQHJ9a" }
+              #               password: user12345
+              - column: { name: first_name, value: "Customer" }
+              - column: { name: last_name, value: "User" }
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: email, value: "manager@exemple.com" }
+              - column: { name: password, value: "$2a$10$cB0N5IINQoQh1SJfskt9pO7jMeD.yIHbmoZTaS..3UGVZkzT26OgO" }
+              #                password: admin12345
+              - column: { name: first_name, value: "Manager" }
+              - column: { name: last_name, value: "Admin" }
+
