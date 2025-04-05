@@ -1,14 +1,12 @@
 package mate.carsharingapp.dto.user;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Data;
 
 @Data
-public class UserResponseDto {
-    private Long id;
-    private String email;
-    private String firstName;
-    private String lastName;
+public class UserUpdateRoleRequestDto {
+    @NotEmpty
     private Set<Long> roleIds = new HashSet<>();
 }
