@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: add-roles-to-test-users.yaml
+      id: add-roles-to-test-users
       author: ihor-sydorenko
       changes:
         - insert:

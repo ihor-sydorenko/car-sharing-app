@@ -13,4 +13,5 @@ databaseChangeLog:
       file: db/changelog/changes/06-insert-test-users.yaml
   - include:
       file: db/changelog/changes/07-add-roles-to-test-users.yaml
-
+  - include:
+      file: db/changelog/changes/08-create-rentals-table.yaml

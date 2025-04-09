@@ -10,13 +10,13 @@ import mate.carsharingapp.dto.car.CreateCarRequestDto;
 import mate.carsharingapp.exception.EntityNotFoundException;
 import mate.carsharingapp.mapper.CarMapper;
 import mate.carsharingapp.model.Car;
-import mate.carsharingapp.repository.CarRepository;
+import mate.carsharingapp.repository.car.CarRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Transactional
-@Service
 @RequiredArgsConstructor
+@Service
 public class CarServiceImpl implements CarService {
     private final CarRepository carRepository;
     private final CarMapper carMapper;

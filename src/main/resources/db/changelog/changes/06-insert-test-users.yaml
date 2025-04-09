@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: insert-test-users.yaml
+      id: insert-test-users
       author: ihor-sydorenko
       changes:
         - insert:
