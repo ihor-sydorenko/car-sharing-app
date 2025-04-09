@@ -106,7 +106,7 @@ public class RentalServiceImpl implements RentalService {
     private void checkCarAvailability(Car car) {
         if (car.getInventory() == 0) {
             throw new CarAvailabilityException(
-                    String.format("Sorry, but car with id: %s is not available for rent. "
+                    String.format("Sorry, but car with id: %s temporarily unavailable for rent. "
                             + "Please choose another", car.getId())
             );
         }
