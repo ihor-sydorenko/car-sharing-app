@@ -1,4 +1,4 @@
-package mate.carsharingapp.repository;
+package mate.carsharingapp.repository.role;
 
 import mate.carsharingapp.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
