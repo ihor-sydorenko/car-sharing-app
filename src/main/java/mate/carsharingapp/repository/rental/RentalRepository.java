@@ -1,6 +1,7 @@
 package mate.carsharingapp.repository.rental;
 
 import java.util.List;
+import java.util.Optional;
 import mate.carsharingapp.model.Rental;
 import mate.carsharingapp.model.User;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +12,9 @@ public interface RentalRepository extends JpaRepository<Rental, Long>,
         JpaSpecificationExecutor<Rental> {
     List<Rental> findAllByUser(User user, Pageable pageable);
 
-    Rental findByIdAndUser(Long rentalId, User user);
+    Optional<Rental> findByIdAndUser(Long rentalId, User user);
 
     List<Rental> findAllByUserAndActualReturnDateIsNull(User user);
+
+    Optional<Rental> findByIdAndActualReturnDateIsNotNull(Long rentalId);
 }

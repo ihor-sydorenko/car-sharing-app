@@ -73,14 +73,20 @@ public class RentalServiceImpl implements RentalService {
     @Override
     public RentalDto getRentalById(Long rentalId, Authentication authentication) {
         User user = (User) userDetailsService.loadUserByUsername(authentication.getName());
-        return rentalMapper.toDto(rentalRepository.findByIdAndUser(rentalId, user));
+        Rental rental = rentalRepository.findByIdAndUser(rentalId, user).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Can't find rental by id: %s",
+                        rentalId))
+        );
+        return rentalMapper.toDto(rental);
     }
 
     @Transactional
     @Override
     public RentalDto setActualReturnDate(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId).orElseThrow(
-                () -> new EntityNotFoundException("Can't find a rental by this ID: " + rentalId));
+                () -> new EntityNotFoundException(String.format("Can't find rental by id: %s",
+                        rentalId))
+        );
         checkIfRentalIsAlreadyClosed(rental);
         rental.setActualReturnDate(LocalDate.now());
         rentalRepository.save(rental);
