@@ -50,7 +50,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(CarAvailabilityException.class)
-    protected ResponseEntity<Object> handleDataProcessingException(CarAvailabilityException ex) {
+    protected ResponseEntity<Object> handleCarAvailabilityException(CarAvailabilityException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("errors", ex.getMessage());
@@ -58,7 +58,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ClosedRentalException.class)
-    protected ResponseEntity<Object> handleOrderProcessingException(ClosedRentalException ex) {
+    protected ResponseEntity<Object> handleClosedRentalException(ClosedRentalException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("errors", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(CreateSessionException.class)
+    protected ResponseEntity<Object> handleCreateSessionException(CreateSessionException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("errors", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UserAccessException.class)
+    protected ResponseEntity<Object> handleUserAccessException(UserAccessException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("errors", ex.getMessage());

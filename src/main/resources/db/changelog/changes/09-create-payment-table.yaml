@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-payment-table
+      author: ihor-sydorenko
+      changes:
+        - createTable:
+            tableName: payments
+            columns:
+              - column:
+                  name: rental_id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    foreignKeyName: fk_payment_rental
+                    references: rentals(id)
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: session_url
+                  type: varchar(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: session_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount_to_pay
+                  type: decimal
+                  constraints:
+                    nullable: false
+
