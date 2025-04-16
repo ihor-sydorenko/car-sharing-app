@@ -19,6 +19,7 @@ import mate.carsharingapp.model.Role;
 import mate.carsharingapp.model.User;
 import mate.carsharingapp.repository.payment.PaymentRepository;
 import mate.carsharingapp.repository.rental.RentalRepository;
+import mate.carsharingapp.service.notification.NotificationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +37,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final StripeService stripeService;
     private final UserDetailsService userDetailsService;
+    private final NotificationService notificationService;
 
     @Value("${stripe.secret-key}")
     private String stripeSecretKey;
@@ -79,6 +81,7 @@ public class PaymentServiceImpl implements PaymentService {
     public void setSuccessPayment(String sessionId) {
         Payment payment = findPayment(sessionId);
         payment.setStatus(Payment.PaymentStatus.PAID);
+        notificationService.successfulPaymentNotification(payment);
         paymentRepository.save(payment);
     }
 
