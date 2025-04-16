@@ -16,6 +16,7 @@ import mate.carsharingapp.model.User;
 import mate.carsharingapp.repository.car.CarRepository;
 import mate.carsharingapp.repository.rental.RentalRepository;
 import mate.carsharingapp.repository.rental.RentalSpecificationBuilder;
+import mate.carsharingapp.service.notification.NotificationService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -31,6 +32,7 @@ public class RentalServiceImpl implements RentalService {
     private final CarRepository carRepository;
     private final UserDetailsService userDetailsService;
     private final RentalSpecificationBuilder rentalSpecificationBuilder;
+    private final NotificationService notificationService;
 
     @Transactional
     @Override
@@ -44,6 +46,7 @@ public class RentalServiceImpl implements RentalService {
         carRepository.save(car);
         Rental rental = createNewRental(requestDto, car, user);
         rentalRepository.save(rental);
+        notificationService.newRentalCreationNotification(rental);
         return rentalMapper.toDto(rental);
     }
 
