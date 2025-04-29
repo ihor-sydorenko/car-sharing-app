@@ -2,8 +2,10 @@ package mate.carsharingapp.dto.car;
 
 import java.math.BigDecimal;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import mate.carsharingapp.model.Car;
 
+@Accessors(chain = true)
 @Data
 public class CarDetailsInfoDto {
     private Long id;

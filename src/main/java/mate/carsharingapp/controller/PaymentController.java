@@ -1,6 +1,7 @@
 package mate.carsharingapp.controller;
 
 import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +66,8 @@ public class PaymentController {
     @GetMapping("/cancel")
     public ResponseEntity<String> cancelPayment(@RequestParam String sessionId)
             throws StripeException {
-        String url = paymentService.setCancelPayment(sessionId);
+        Session session = Session.retrieve(sessionId);
+        String url = paymentService.setCancelPayment(session);
         String message = String.format("Payment has been canceled."
                 + " Follow this link to finish payment in next 24 hours: %s", url
         );

@@ -1,6 +1,7 @@
 package mate.carsharingapp.service.payment;
 
 import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
 import mate.carsharingapp.dto.payment.PaymentDto;
 import mate.carsharingapp.dto.payment.PaymentRequestDto;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,7 @@ public interface PaymentService {
 
     void setSuccessPayment(String sessionId);
 
-    String setCancelPayment(String sessionId) throws StripeException;
+    String setCancelPayment(Session session) throws StripeException;
 
     PaymentDto renewPaymentSession(Long paymentId,
                                    UriComponentsBuilder uriComponentsBuilder);
