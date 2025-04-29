@@ -87,11 +87,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public String setCancelPayment(String sessionId) throws StripeException {
-        Payment payment = findPayment(sessionId);
+    public String setCancelPayment(Session session) throws StripeException {
+        Payment payment = findPayment(session.getId());
         payment.setStatus(Payment.PaymentStatus.CANCELLED);
         paymentRepository.save(payment);
-        Session session = Session.retrieve(sessionId);
         return session.getUrl();
     }
 
