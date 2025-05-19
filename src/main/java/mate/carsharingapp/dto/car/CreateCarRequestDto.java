@@ -16,7 +16,6 @@ public class CreateCarRequestDto {
     private String brand;
     @NotBlank
     private String type;
-    @NotNull
     @Positive
     private int inventory;
     @NotNull

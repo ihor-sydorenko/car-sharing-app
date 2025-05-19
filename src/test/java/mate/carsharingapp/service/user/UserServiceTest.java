@@ -10,8 +10,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.user.UserRegistrationRequestDto;
 import mate.carsharingapp.dto.user.UserResponseDto;
 import mate.carsharingapp.dto.user.UserUpdateProfileInfoRequestDto;
@@ -23,7 +22,6 @@ import mate.carsharingapp.model.Role;
 import mate.carsharingapp.model.User;
 import mate.carsharingapp.repository.role.RoleRepository;
 import mate.carsharingapp.repository.user.UserRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,18 +58,18 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        secondRole = createCustomerRole();
-        user = createUser(secondRole);
-        expectedUserResponseDto = getUserResponseDtoFromUser(user);
+        secondRole = TestUtil.createCustomerRole();
+        user = TestUtil.createSecondUser();
+        expectedUserResponseDto = TestUtil.createUserResponseDto(user);
     }
 
     @DisplayName("Verify register() method. Register a new user and return UserResponseDto")
     @Test
     void register_ValidUserRegistrationRequestDto_ReturnUserResponseDto()
             throws RegistrationException {
-        UserRegistrationRequestDto requestDto = createUserRegistrationRequestDto();
-        user = getUserFromUserRegistrationRequestDto(requestDto, secondRole);
-        expectedUserResponseDto = getUserResponseDtoFromUser(user);
+        UserRegistrationRequestDto requestDto = TestUtil.createFirstUserRegistrationRequestDto();
+        user = TestUtil.getUserFromUserRegistrationRequestDto(requestDto, secondRole);
+        expectedUserResponseDto = TestUtil.createUserResponseDto(user);
 
         when(userRepository.existsUserByEmail(user.getEmail())).thenReturn(false);
         when(userMapper.toModel(requestDto)).thenReturn(user);
@@ -82,7 +80,7 @@ class UserServiceTest {
 
         UserResponseDto actual = userService.register(requestDto);
 
-        Assertions.assertEquals(expectedUserResponseDto, actual);
+        assertEquals(expectedUserResponseDto, actual);
         verify(userRepository).existsUserByEmail(user.getEmail());
         verify(userMapper).toModel(requestDto);
         verify(passwordEncoder).encode(PASSWORD);
@@ -95,7 +93,7 @@ class UserServiceTest {
     @DisplayName("Verify updateRoleById() method. Update user's roles and return UserResponseDto")
     @Test
     void updateRoleById_ValidUserUpdateRoleRequestDto_ReturnUserResponseDto() {
-        UserUpdateRoleRequestDto requestDto = createUserUpdateRoleRequestDto();
+        UserUpdateRoleRequestDto requestDto = TestUtil.createUserUpdateRoleRequestDto();
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         doNothing().when(userMapper).updateUserRoleFromDto(requestDto, user);
@@ -114,7 +112,7 @@ class UserServiceTest {
     @Test
     void updateRoleById_InvalidUserId_ThrowException() {
         Long userId = 99L;
-        UserUpdateRoleRequestDto requestDto = createUserUpdateRoleRequestDto();
+        UserUpdateRoleRequestDto requestDto = TestUtil.createUserUpdateRoleRequestDto();
         when(userRepository.findById(userId)).thenThrow(
                 new EntityNotFoundException("Can't find user by id: " + userId));
 
@@ -173,64 +171,5 @@ class UserServiceTest {
 
         verify(userRepository).deleteById(anyLong());
         verifyNoMoreInteractions(userRepository);
-    }
-
-    private static UserRegistrationRequestDto createUserRegistrationRequestDto() {
-        return new UserRegistrationRequestDto()
-                .setEmail("ihor@example.com")
-                .setPassword(PASSWORD)
-                .setRepeatPassword(PASSWORD)
-                .setFirstName("Ihor")
-                .setLastName("Sydorenko");
-    }
-
-    private static User getUserFromUserRegistrationRequestDto(
-            UserRegistrationRequestDto requestDto, Role role) {
-        return new User()
-                .setId(1L)
-                .setEmail(requestDto.getEmail())
-                .setPassword(requestDto.getPassword())
-                .setFirstName(requestDto.getFirstName())
-                .setLastName(requestDto.getLastName())
-                .setRoles(Set.of(role));
-    }
-
-    private static Role createManagerRole() {
-        return new Role()
-                .setId(1L)
-                .setName(Role.RoleName.ROLE_MANAGER);
-    }
-
-    private static Role createCustomerRole() {
-        return new Role()
-                .setId(2L)
-                .setName(Role.RoleName.ROLE_CUSTOMER);
-    }
-
-    private static UserResponseDto getUserResponseDtoFromUser(User user) {
-        Set<Long> roleIds = user.getRoles().stream()
-                .map(Role::getId)
-                .collect(Collectors.toSet());
-        return new UserResponseDto()
-                .setId(user.getId())
-                .setEmail(user.getEmail())
-                .setFirstName(user.getFirstName())
-                .setLastName(user.getLastName())
-                .setRoleIds(roleIds);
-    }
-
-    private static UserUpdateRoleRequestDto createUserUpdateRoleRequestDto() {
-        return new UserUpdateRoleRequestDto()
-                .setRoleIds(Set.of(createManagerRole().getId(), createCustomerRole().getId()));
-    }
-
-    private User createUser(Role role) {
-        return new User()
-                .setId(2L)
-                .setEmail("nelia@example.com")
-                .setPassword("user12345")
-                .setFirstName("Nelia")
-                .setLastName("Sydorenko")
-                .setRoles(Set.of(role));
     }
 }

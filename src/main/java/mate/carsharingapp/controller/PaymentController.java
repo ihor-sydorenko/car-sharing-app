@@ -4,6 +4,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mate.carsharingapp.dto.payment.PaymentDto;
 import mate.carsharingapp.dto.payment.PaymentRequestDto;
@@ -35,7 +36,7 @@ public class PaymentController {
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public PaymentDto createPayment(@RequestBody PaymentRequestDto requestDto,
+    public PaymentDto createPayment(@RequestBody @Valid PaymentRequestDto requestDto,
                                     UriComponentsBuilder uriComponentsBuilder) {
         return paymentService.createPayment(requestDto, uriComponentsBuilder);
     }

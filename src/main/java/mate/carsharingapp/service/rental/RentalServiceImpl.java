@@ -92,6 +92,7 @@ public class RentalServiceImpl implements RentalService {
         );
         checkIfRentalIsAlreadyClosed(rental);
         rental.setActualReturnDate(LocalDate.now());
+        rental.setActive(false);
         rentalRepository.save(rental);
         Car car = findCarById(rental.getCar().getId());
         car.setInventory(car.getInventory() + 1);

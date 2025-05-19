@@ -28,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -43,7 +44,6 @@ public class PaymentServiceImpl implements PaymentService {
     private String stripeSecretKey;
 
     @Override
-    @Transactional
     public PaymentDto createPayment(PaymentRequestDto requestDto,
                                     UriComponentsBuilder uriComponentsBuilder) {
         Rental rental = rentalRepository.findByIdAndActualReturnDateIsNotNull(
@@ -77,7 +77,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
     public void setSuccessPayment(String sessionId) {
         Payment payment = findPayment(sessionId);
         payment.setStatus(Payment.PaymentStatus.PAID);
@@ -86,7 +85,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
     public String setCancelPayment(Session session) throws StripeException {
         Payment payment = findPayment(session.getId());
         payment.setStatus(Payment.PaymentStatus.CANCELLED);
@@ -95,7 +93,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
     public PaymentDto renewPaymentSession(Long paymentId,
                                           UriComponentsBuilder uriComponentsBuilder) {
         Payment payment = paymentRepository.findById(paymentId).orElseThrow(

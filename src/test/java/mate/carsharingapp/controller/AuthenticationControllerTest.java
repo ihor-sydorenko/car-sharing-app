@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Set;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.user.UserLoginRequestDto;
 import mate.carsharingapp.dto.user.UserLoginResponseDto;
 import mate.carsharingapp.dto.user.UserRegistrationRequestDto;
@@ -52,8 +52,8 @@ class AuthenticationControllerTest {
     @DisplayName("Verify register() method. Return UserResponseDto")
     @Test
     void register_ValidUserRegistrationRequestDto_RegisterNewUserSuccess() throws Exception {
-        UserRegistrationRequestDto requestDto = createUserRegistrationRequestDto();
-        UserResponseDto expected = createUserResponseDto(requestDto);
+        UserRegistrationRequestDto requestDto = TestUtil.createSecondUserRegistrationRequestDto();
+        UserResponseDto expected = TestUtil.createUserResponseDto(requestDto);
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
         MvcResult result = mockMvc.perform(post("/auth/register")
@@ -90,23 +90,5 @@ class AuthenticationControllerTest {
         Field field = Arrays.stream(actual.getClass().getDeclaredFields()).toList().get(0);
         assertEquals(1, actual.getClass().getDeclaredFields().length);
         assertEquals("token", field.getName());
-    }
-
-    private static UserRegistrationRequestDto createUserRegistrationRequestDto() {
-        return new UserRegistrationRequestDto()
-                .setEmail("nelia.sydorenko@gmail.com")
-                .setPassword("user12345")
-                .setRepeatPassword("user12345")
-                .setFirstName("Nelia")
-                .setLastName("Sydorenko");
-    }
-
-    private static UserResponseDto createUserResponseDto(UserRegistrationRequestDto requestDto) {
-        return new UserResponseDto()
-                .setId(4L)
-                .setEmail(requestDto.getEmail())
-                .setFirstName(requestDto.getFirstName())
-                .setLastName(requestDto.getLastName())
-                .setRoleIds(Set.of(2L));
     }
 }

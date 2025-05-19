@@ -13,17 +13,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Optional;
-import java.util.Set;
 import mate.carsharingapp.config.CustomPageImpl;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.payment.PaymentDto;
 import mate.carsharingapp.dto.payment.PaymentRequestDto;
 import mate.carsharingapp.dto.rental.RentalDto;
 import mate.carsharingapp.model.Payment;
-import mate.carsharingapp.model.Role;
 import mate.carsharingapp.model.User;
 import mate.carsharingapp.repository.payment.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,9 +67,9 @@ class PaymentControllerTest {
     @WithMockUser(username = "customer", roles = {"CUSTOMER"})
     @Test
     void createPayment() throws Exception {
-        User user = createUser();
-        PaymentRequestDto requestDto = createPaymentRequestDto();
-        PaymentDto expected = createPaymentDto();
+        User user = TestUtil.createFirstUser();
+        PaymentRequestDto requestDto = TestUtil.createPaymentRequestDto();
+        PaymentDto expected = TestUtil.createPaymentDto();
 
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
         MvcResult result = mockMvc.perform(post("/payments")
@@ -95,7 +91,7 @@ class PaymentControllerTest {
     @WithMockUser(username = "customer", roles = {"CUSTOMER"})
     @Test
     void getAllPayments() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createFirstUser();
         MvcResult result = mockMvc.perform(get("/payments")
                         .with(authentication(new UsernamePasswordAuthenticationToken(
                                 user, null, user.getAuthorities())))
@@ -129,44 +125,5 @@ class PaymentControllerTest {
 
         assertTrue(payment.isPresent());
         assertEquals(Payment.PaymentStatus.PAID, payment.get().getStatus());
-    }
-
-    private PaymentRequestDto createPaymentRequestDto() {
-        return new PaymentRequestDto()
-                .setRentalId(1L)
-                .setPaymentType(Payment.PaymentType.PAYMENT);
-    }
-
-    private PaymentDto createPaymentDto() throws MalformedURLException {
-        PaymentRequestDto requestDto = createPaymentRequestDto();
-        return new PaymentDto()
-                .setId(requestDto.getRentalId())
-                .setStatus(Payment.PaymentStatus.PENDING)
-                .setType(requestDto.getPaymentType())
-                .setSessionUrl(new URL("http://mock.url1"))
-                .setSessionId("sessionId2")
-                .setAmountToPay(BigDecimal.valueOf(745));
-    }
-
-    private static User createUser() {
-        return new User()
-                .setId(1L)
-                .setEmail("customer@example.com")
-                .setPassword("user12345")
-                .setFirstName("Customer")
-                .setLastName("Userovski")
-                .setRoles(Set.of(createCustomerRole()));
-    }
-
-    private static Role createManagerRole() {
-        return new Role()
-                .setId(1L)
-                .setName(Role.RoleName.ROLE_MANAGER);
-    }
-
-    private static Role createCustomerRole() {
-        return new Role()
-                .setId(2L)
-                .setName(Role.RoleName.ROLE_CUSTOMER);
     }
 }

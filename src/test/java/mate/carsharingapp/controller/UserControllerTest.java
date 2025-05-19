@@ -13,11 +13,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Set;
-import java.util.stream.Collectors;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.user.UserResponseDto;
 import mate.carsharingapp.dto.user.UserUpdateProfileInfoRequestDto;
 import mate.carsharingapp.dto.user.UserUpdateRoleRequestDto;
-import mate.carsharingapp.model.Role;
 import mate.carsharingapp.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,10 +60,10 @@ class UserControllerTest {
     @WithMockUser(username = "manager", roles = {"MANAGER"})
     @Test
     void updateRole_ValidRequest_Success() throws Exception {
-        User user = createUser(createCustomerRole());
+        User user = TestUtil.createFirstUser();
         UserUpdateRoleRequestDto requestDto = new UserUpdateRoleRequestDto()
                 .setRoleIds(Set.of(2L, 1L));
-        UserResponseDto expected = createUserResponseDto(user, requestDto);
+        UserResponseDto expected = TestUtil.createUserResponseDto(user, requestDto);
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
         MvcResult result = mockMvc.perform(put("/users/{id}/role", user.getId())
@@ -84,8 +83,8 @@ class UserControllerTest {
     @WithMockUser(username = "customer", roles = {"CUSTOMER"})
     @Test
     void getMyProfile_AuthenticatedUser_ReturnUserResponseDto() throws Exception {
-        User user = createUser(createCustomerRole());
-        UserResponseDto expected = createUserResponseDto(user);
+        User user = TestUtil.createFirstUser();
+        UserResponseDto expected = TestUtil.createUserResponseDto(user);
 
         MvcResult result = mockMvc.perform(get("/users/me")
                         .with(authentication(new UsernamePasswordAuthenticationToken(
@@ -105,11 +104,11 @@ class UserControllerTest {
     @WithMockUser(username = "customer", roles = {"CUSTOMER"})
     @Test
     void updateProfileInfo_AuthenticatedUser_ReturnUserResponseDto() throws Exception {
-        User user = createUser(createCustomerRole());
+        User user = TestUtil.createFirstUser();
         UserUpdateProfileInfoRequestDto requestDto = new UserUpdateProfileInfoRequestDto()
                 .setFirstName("newFirstUsername")
                 .setLastName("newLastUserName");
-        UserResponseDto expected = createUserResponseDto(user);
+        UserResponseDto expected = TestUtil.createUserResponseDto(user);
         expected.setFirstName("newFirstUsername");
         expected.setLastName("newLastUserName");
 
@@ -136,43 +135,5 @@ class UserControllerTest {
         Long userId = 1L;
         mockMvc.perform(delete("/users/{id}", userId))
                 .andExpect(status().isNoContent());
-    }
-
-    private User createUser(Role role) {
-        return new User()
-                .setId(1L)
-                .setEmail("customer@example.com")
-                .setPassword("qwerty12345")
-                .setFirstName("Customer")
-                .setLastName("Userovski")
-                .setRoles(Set.of(role));
-    }
-
-    private static Role createCustomerRole() {
-        return new Role()
-                .setId(2L)
-                .setName(Role.RoleName.ROLE_CUSTOMER);
-    }
-
-    private static UserResponseDto createUserResponseDto(
-            User user, UserUpdateRoleRequestDto requestDto) {
-        return new UserResponseDto()
-                .setId(user.getId())
-                .setEmail(user.getEmail())
-                .setFirstName(user.getFirstName())
-                .setLastName(user.getLastName())
-                .setRoleIds(requestDto.getRoleIds());
-    }
-
-    private static UserResponseDto createUserResponseDto(User user) {
-        Set<Long> roleIds = user.getRoles().stream()
-                .map(Role::getId)
-                .collect(Collectors.toSet());
-        return new UserResponseDto()
-                .setId(user.getId())
-                .setEmail(user.getEmail())
-                .setFirstName(user.getFirstName())
-                .setLastName(user.getLastName())
-                .setRoleIds(roleIds);
     }
 }

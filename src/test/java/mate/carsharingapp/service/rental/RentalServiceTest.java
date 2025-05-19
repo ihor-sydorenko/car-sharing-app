@@ -1,17 +1,16 @@
 package mate.carsharingapp.service.rental;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.rental.CreateRentalRequestDto;
 import mate.carsharingapp.dto.rental.RentalDto;
 import mate.carsharingapp.exception.EntityNotFoundException;
@@ -19,7 +18,6 @@ import mate.carsharingapp.mapper.CarMapper;
 import mate.carsharingapp.mapper.RentalMapper;
 import mate.carsharingapp.model.Car;
 import mate.carsharingapp.model.Rental;
-import mate.carsharingapp.model.Role;
 import mate.carsharingapp.model.User;
 import mate.carsharingapp.repository.car.CarRepository;
 import mate.carsharingapp.repository.rental.RentalRepository;
@@ -63,9 +61,9 @@ class RentalServiceTest {
 
     @BeforeEach
     void setUp() {
-        car = createCar();
-        user = createUser();
-        rental = createRental(user, car);
+        car = TestUtil.createFirstCar();
+        user = TestUtil.createSecondUser();
+        rental = TestUtil.createUnclosedRental(user, car);
         expectedRentalDto = createRentalDto(car, user, rental);
         authentication = new UsernamePasswordAuthenticationToken(
                 user.getUsername(), user.getPassword());
@@ -74,7 +72,7 @@ class RentalServiceTest {
     @DisplayName("Verify createRental() method works")
     @Test
     void createRental_ValidRequestDto_ReturnRentalDto() {
-        CreateRentalRequestDto requestDto = createCreateRentalRequestDto();
+        CreateRentalRequestDto requestDto = TestUtil.createCreateRentalRequestDto();
 
         when(userDetailsService.loadUserByUsername(authentication.getName())).thenReturn(user);
         when(rentalRepository.findAllByUserAndActualReturnDateIsNull(user))
@@ -87,7 +85,7 @@ class RentalServiceTest {
 
         RentalDto actual = rentalService.createRental(requestDto, authentication);
 
-        Assertions.assertEquals(expectedRentalDto, actual);
+        assertEquals(expectedRentalDto, actual);
         verify(userDetailsService).loadUserByUsername(authentication.getName());
         verify(rentalRepository).findAllByUserAndActualReturnDateIsNull(user);
         verify(carRepository).findById(car.getId());
@@ -110,7 +108,7 @@ class RentalServiceTest {
 
         List<RentalDto> actual = rentalService.getRentalsByUserId(true, pageable, authentication);
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
         verify(userDetailsService).loadUserByUsername(authentication.getName());
         verify(rentalRepository).findAllByUser(user, pageable);
         verify(rentalMapper).toDto(rental);
@@ -127,7 +125,7 @@ class RentalServiceTest {
 
         RentalDto actual = rentalService.getRentalById(rental.getId(), authentication);
 
-        Assertions.assertEquals(expectedRentalDto, actual);
+        assertEquals(expectedRentalDto, actual);
         verify(userDetailsService).loadUserByUsername(authentication.getName());
         verify(rentalRepository).findByIdAndUser(rental.getId(), user);
         verify(rentalMapper).toDto(rental);
@@ -144,7 +142,7 @@ class RentalServiceTest {
         EntityNotFoundException actual = Assertions.assertThrows(EntityNotFoundException.class,
                 () -> rentalService.getRentalById(rentalId, authentication));
 
-        Assertions.assertEquals(expected, actual.getMessage());
+        assertEquals(expected, actual.getMessage());
         verify(userDetailsService).loadUserByUsername(authentication.getName());
         verify(rentalRepository).findByIdAndUser(rentalId, user);
         verifyNoMoreInteractions(userDetailsService, rentalRepository);
@@ -161,56 +159,13 @@ class RentalServiceTest {
 
         RentalDto actual = rentalService.setActualReturnDate(rental.getId());
 
-        Assertions.assertEquals(expectedRentalDto, actual);
+        assertEquals(expectedRentalDto, actual);
         verify(rentalRepository).findById(rental.getId());
         verify(rentalRepository).save(rental);
         verify(carRepository).findById(car.getId());
         verify(carRepository).save(car);
         verify(rentalMapper).toDto(rental);
         verifyNoMoreInteractions(rentalRepository, carRepository, rentalMapper);
-    }
-
-    private static User createUser() {
-        return new User()
-                .setId(2L)
-                .setEmail("nelia@example.com")
-                .setPassword("user12345")
-                .setFirstName("Nelia")
-                .setLastName("Sydorenko")
-                .setRoles(Set.of(createRole()));
-    }
-
-    private static Car createCar() {
-        return new Car()
-                .setId(1L)
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType(Car.CarType.SEDAN)
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149));
-    }
-
-    private static Role createRole() {
-        return new Role()
-                .setId(2L)
-                .setName(Role.RoleName.ROLE_CUSTOMER);
-    }
-
-    private static Rental createRental(User user, Car car) {
-        return new Rental()
-                .setId(1L)
-                .setUser(user)
-                .setCar(car)
-                .setRentalDate(LocalDate.of(2025, 3, 11))
-                .setReturnDate(LocalDate.of(2025, 3, 15))
-                .setActualReturnDate(null);
-    }
-
-    private static CreateRentalRequestDto createCreateRentalRequestDto() {
-        return new CreateRentalRequestDto()
-                .setRentalDate(LocalDate.of(2025, 3, 11))
-                .setReturnDate(LocalDate.of(2025, 3, 15))
-                .setCarId(1L);
     }
 
     private RentalDto createRentalDto(Car car, User user, Rental rental) {
