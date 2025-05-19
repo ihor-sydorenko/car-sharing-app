@@ -1,9 +1,9 @@
 package mate.carsharingapp.service.car;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.car.CarDetailsInfoDto;
 import mate.carsharingapp.dto.car.CarDto;
 import mate.carsharingapp.dto.car.CreateCarRequestDto;
@@ -19,7 +20,6 @@ import mate.carsharingapp.exception.EntityNotFoundException;
 import mate.carsharingapp.mapper.CarMapper;
 import mate.carsharingapp.model.Car;
 import mate.carsharingapp.repository.car.CarRepository;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,15 +43,9 @@ class CarServiceTest {
     @DisplayName("Verify save() method works")
     @Test
     void save_ValidCarRequestDto_ReturnCarDto() {
-        CreateCarRequestDto requestDto = new CreateCarRequestDto()
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType("SEDAN")
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149));
-
-        Car car = createCar();
-        CarDetailsInfoDto carDetailsInfoDto = createCarDetailsInfoDto();
+        CreateCarRequestDto requestDto = TestUtil.createCarRequestDto();
+        Car car = TestUtil.createFirstCar();
+        CarDetailsInfoDto carDetailsInfoDto = TestUtil.createCarDetailsInfoDto();
 
         when(carMapper.toModel(requestDto)).thenReturn(car);
         when(carRepository.save(car)).thenReturn(car);
@@ -69,8 +63,8 @@ class CarServiceTest {
     @DisplayName("Verify findAll() method works")
     @Test
     void findAll_ValidPageable_ReturnListOfAllCars() {
-        Car car = createCar();
-        CarDto carDto = createCarDto();
+        Car car = TestUtil.createFirstCar();
+        CarDto carDto = TestUtil.createCarDto();
 
         Pageable pageable = PageRequest.of(0, 10);
         List<Car> bookList = List.of(car);
@@ -92,8 +86,8 @@ class CarServiceTest {
     @Test
     void findById_ExistingId_ReturnCarDetailsInfoDto() {
         Long carId = 1L;
-        Car car = createCar();
-        CarDetailsInfoDto carDetailsInfoDto = createCarDetailsInfoDto();
+        Car car = TestUtil.createFirstCar();
+        CarDetailsInfoDto carDetailsInfoDto = TestUtil.createCarDetailsInfoDto();
 
         when(carRepository.findById(carId)).thenReturn(Optional.of(car));
         when(carMapper.toDetailsInfoDto(car)).thenReturn(carDetailsInfoDto);
@@ -130,9 +124,9 @@ class CarServiceTest {
                 .setInventory(7)
                 .setDailyFee(BigDecimal.valueOf(129));
 
-        Car carForUpdating = createCar();
+        Car carForUpdating = TestUtil.createFirstCar();
         carForUpdating.setModel("Passat");
-        CarDetailsInfoDto carDetailsInfoDto = createCarDetailsInfoDto();
+        CarDetailsInfoDto carDetailsInfoDto = TestUtil.createCarDetailsInfoDto();
         carDetailsInfoDto.setModel("Passat");
         Long carId = 1L;
 
@@ -152,12 +146,7 @@ class CarServiceTest {
     @DisplayName("Verify updateById() method with non existing id, method throw exception")
     void updateById_NonExistingId_throwException() {
         Long carId = 99L;
-        CreateCarRequestDto requestDto = new CreateCarRequestDto()
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType("SEDAN")
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149));
+        CreateCarRequestDto requestDto = TestUtil.createCarRequestDto();
 
         when(carRepository.findById(carId)).thenReturn(Optional.empty());
         String expected = "Can't find car by id: " + carId;
@@ -178,36 +167,5 @@ class CarServiceTest {
 
         verify(carRepository).deleteById(carId);
         verifyNoMoreInteractions(carRepository);
-    }
-
-    @NotNull
-    private static CarDto createCarDto() {
-        return new CarDto()
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType(Car.CarType.SEDAN);
-    }
-
-    @NotNull
-    private static CarDetailsInfoDto createCarDetailsInfoDto() {
-        return new CarDetailsInfoDto()
-                .setId(1L)
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType(Car.CarType.SEDAN)
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149));
-    }
-
-    @NotNull
-    private static Car createCar() {
-        return new Car()
-                .setId(1L)
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType(Car.CarType.SEDAN)
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149))
-                .setDeleted(false);
     }
 }

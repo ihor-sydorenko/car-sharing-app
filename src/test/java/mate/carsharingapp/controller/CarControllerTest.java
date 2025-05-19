@@ -16,10 +16,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.List;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.car.CarDetailsInfoDto;
 import mate.carsharingapp.dto.car.CarDto;
 import mate.carsharingapp.dto.car.CreateCarRequestDto;
-import mate.carsharingapp.model.Car;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,13 +58,13 @@ class CarControllerTest {
     @WithMockUser(username = "manager", roles = {"MANAGER"})
     @Test
     void addCar_ValidRequest_CreateNewCar() throws Exception {
-        CreateCarRequestDto requestDto = createCarRequestDto();
-        CarDetailsInfoDto expected = createCarDetailsInfoDto(3L);
+        CreateCarRequestDto requestDto = TestUtil.createCarRequestDto();
+        CarDetailsInfoDto expected = TestUtil.createCarDetailsInfoDto(3L);
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
         MvcResult result = mockMvc.perform(post("/cars")
-                                .content(jsonRequest)
-                                .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -80,13 +80,13 @@ class CarControllerTest {
     @WithMockUser(username = "manager", roles = {"MANAGER"})
     @Test
     void addCar_InvalidRequest_ReturnBadRequest() throws Exception {
-        CreateCarRequestDto requestDto = createCarRequestDto();
+        CreateCarRequestDto requestDto = TestUtil.createCarRequestDto();
         requestDto.setBrand("");
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
         mockMvc.perform(post("/cars")
-                                .content(jsonRequest)
-                                .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -117,7 +117,7 @@ class CarControllerTest {
     @Test
     void getCarById_ExistCarId_ReturnCarDto() throws Exception {
         Long carId = 1L;
-        CarDetailsInfoDto expected = createCarDetailsInfoDto(carId);
+        CarDetailsInfoDto expected = TestUtil.createCarDetailsInfoDto(carId);
 
         MvcResult result = mockMvc.perform(get("/cars/{id}", carId))
                 .andExpect(status().isOk())
@@ -134,9 +134,9 @@ class CarControllerTest {
     @Test
     void updateCarInfo_ValidUpdateRequest_ReturnUpdatedCar() throws Exception {
         Long carId = 1L;
-        CreateCarRequestDto requestDto = createCarRequestDto();
+        CreateCarRequestDto requestDto = TestUtil.createCarRequestDto();
         requestDto.setDailyFee(BigDecimal.valueOf(600));
-        CarDetailsInfoDto expected = createCarDetailsInfoDto(1L);
+        CarDetailsInfoDto expected = TestUtil.createCarDetailsInfoDto(1L);
         expected.setDailyFee(BigDecimal.valueOf(600));
 
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
@@ -164,25 +164,5 @@ class CarControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isNoContent());
-    }
-
-    private static CreateCarRequestDto createCarRequestDto() {
-        return new CreateCarRequestDto()
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType("SEDAN")
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149.00));
-    }
-
-    private static CarDetailsInfoDto createCarDetailsInfoDto(Long id) {
-        CreateCarRequestDto requestDto = createCarRequestDto();
-        return new CarDetailsInfoDto()
-                .setId(id)
-                .setModel(requestDto.getModel())
-                .setBrand(requestDto.getBrand())
-                .setType(Car.CarType.SEDAN)
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149.00));
     }
 }

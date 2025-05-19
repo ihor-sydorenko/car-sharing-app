@@ -13,16 +13,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import mate.carsharingapp.dto.car.CarDetailsInfoDto;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.rental.CreateRentalRequestDto;
 import mate.carsharingapp.dto.rental.RentalDto;
-import mate.carsharingapp.model.Car;
 import mate.carsharingapp.model.Rental;
-import mate.carsharingapp.model.Role;
 import mate.carsharingapp.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -69,8 +66,8 @@ class RentalControllerTest {
                 .setReturnDate(LocalDate.now().plusDays(4))
                 .setCarId(1L);
 
-        User user = createSecondUser();
-        RentalDto expected = createRentalDto(requestDto);
+        User user = TestUtil.createThirdUser();
+        RentalDto expected = TestUtil.createRentalDto(requestDto);
         expected.getCarDetailsInfoDto().setInventory(4);
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
@@ -93,8 +90,8 @@ class RentalControllerTest {
     @WithMockUser(username = "manager", roles = {"MANAGER"})
     @Test
     void getRentalBySearchParameters_ValidSearchParams_ReturnRentals() throws Exception {
-        User user = createFirstUser();
-        user.setRoles(Set.of(createCustomerRole(), createManagerRole()));
+        User user = TestUtil.createSecondUser();
+        user.setRoles(Set.of(TestUtil.createCustomerRole(), TestUtil.createManagerRole()));
         MvcResult result = mockMvc.perform(get("/rentals/search")
                         .with(authentication(new UsernamePasswordAuthenticationToken(
                                 user, null, user.getAuthorities())))
@@ -116,7 +113,7 @@ class RentalControllerTest {
     @WithMockUser(username = "customer", roles = {"CUSTOMER"})
     @Test
     void getRentalByUserId() throws Exception {
-        User user = createFirstUser();
+        User user = TestUtil.createSecondUser();
         MvcResult result = mockMvc.perform(get("/rentals")
                         .with(authentication(new UsernamePasswordAuthenticationToken(
                                 user, null, user.getAuthorities())))
@@ -141,12 +138,12 @@ class RentalControllerTest {
     @Test
     void getRentalById() throws Exception {
         Long rentalId = 3L;
-        User user = createFirstUser();
+        User user = TestUtil.createSecondUser();
         RentalDto expected = new RentalDto()
                 .setId(rentalId)
                 .setRentalDate(LocalDate.of(2025, 4, 25))
                 .setReturnDate(LocalDate.of(2025, 4, 27))
-                .setCarDetailsInfoDto(createSecondCarDetailsInfoDto())
+                .setCarDetailsInfoDto(TestUtil.createSecondCarDetailsInfoDto())
                 .setUserId(user.getId());
 
         MvcResult result = mockMvc.perform(get("/rentals/{rentalId}", rentalId)
@@ -169,16 +166,16 @@ class RentalControllerTest {
     @Test
     void setActualReturnDate() throws Exception {
         Long rentalId = 3L;
-        User user = createFirstUser();
-        user.setRoles(Set.of(createCustomerRole(), createManagerRole()));
+        User user = TestUtil.createSecondUser();
+        user.setRoles(Set.of(TestUtil.createCustomerRole(), TestUtil.createManagerRole()));
         Rental rental = new Rental()
                 .setId(rentalId)
                 .setRentalDate(LocalDate.of(2025, 4, 25))
                 .setReturnDate(LocalDate.of(2025, 4, 27))
-                .setCar(createCar())
+                .setCar(TestUtil.createSecondCar())
                 .setUser(user);
 
-        RentalDto expected = createRentalResponseDto(rental);
+        RentalDto expected = TestUtil.createRentalResponseDto(rental);
         rental.setActualReturnDate(LocalDate.now());
         expected.getCarDetailsInfoDto().setInventory(11);
 
@@ -197,86 +194,5 @@ class RentalControllerTest {
         assertEquals(expected.getCarDetailsInfoDto().getInventory(),
                 actual.getCarDetailsInfoDto().getInventory());
         assertTrue(reflectionEquals(expected, actual, "id"));
-    }
-
-    private static User createFirstUser() {
-        return new User()
-                .setId(2L)
-                .setEmail("nelia@example.com")
-                .setPassword("user12345")
-                .setFirstName("Nelia")
-                .setLastName("Sydorenko")
-                .setRoles(Set.of(createCustomerRole()));
-    }
-
-    private static User createSecondUser() {
-        return new User()
-                .setId(3L)
-                .setEmail("ihor@example.com")
-                .setPassword("user12345")
-                .setFirstName("Ihor")
-                .setLastName("Sydorenko")
-                .setRoles(Set.of(createCustomerRole()));
-    }
-
-    private static Role createManagerRole() {
-        return new Role()
-                .setId(1L)
-                .setName(Role.RoleName.ROLE_MANAGER);
-    }
-
-    private static Role createCustomerRole() {
-        return new Role()
-                .setId(2L)
-                .setName(Role.RoleName.ROLE_CUSTOMER);
-    }
-
-    private static CarDetailsInfoDto createCarDetailsInfoDto() {
-        return new CarDetailsInfoDto()
-                .setId(1L)
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType(Car.CarType.SEDAN)
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149));
-    }
-
-    private static CarDetailsInfoDto createSecondCarDetailsInfoDto() {
-        return new CarDetailsInfoDto()
-                .setId(2L)
-                .setModel("Jetta2")
-                .setBrand("Volkswagen")
-                .setType(Car.CarType.SEDAN)
-                .setInventory(10)
-                .setDailyFee(BigDecimal.valueOf(109));
-    }
-
-    private static RentalDto createRentalDto(CreateRentalRequestDto requestDto) {
-        return new RentalDto()
-                .setId(4L)
-                .setRentalDate(requestDto.getRentalDate())
-                .setReturnDate(requestDto.getReturnDate())
-                .setCarDetailsInfoDto(createCarDetailsInfoDto())
-                .setUserId(createSecondUser().getId());
-    }
-
-    private static Car createCar() {
-        return new Car()
-                .setId(2L)
-                .setBrand("Jetta2")
-                .setModel("Volkswagen")
-                .setType(Car.CarType.SEDAN)
-                .setInventory(10)
-                .setDailyFee(BigDecimal.valueOf(109))
-                .setDeleted(false);
-    }
-
-    private static RentalDto createRentalResponseDto(Rental rental) {
-        return new RentalDto()
-                .setId(rental.getId())
-                .setRentalDate(rental.getRentalDate())
-                .setReturnDate(rental.getReturnDate())
-                .setCarDetailsInfoDto(createSecondCarDetailsInfoDto())
-                .setUserId(rental.getUser().getId());
     }
 }

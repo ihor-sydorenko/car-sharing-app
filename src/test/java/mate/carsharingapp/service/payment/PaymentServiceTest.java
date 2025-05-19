@@ -1,5 +1,7 @@
 package mate.carsharingapp.service.payment;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -9,10 +11,9 @@ import static org.mockito.Mockito.when;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import mate.carsharingapp.config.TestUtil;
 import mate.carsharingapp.dto.payment.PaymentDto;
 import mate.carsharingapp.dto.payment.PaymentRequestDto;
 import mate.carsharingapp.exception.EntityNotFoundException;
@@ -20,7 +21,6 @@ import mate.carsharingapp.mapper.PaymentMapper;
 import mate.carsharingapp.model.Car;
 import mate.carsharingapp.model.Payment;
 import mate.carsharingapp.model.Rental;
-import mate.carsharingapp.model.Role;
 import mate.carsharingapp.model.User;
 import mate.carsharingapp.repository.payment.PaymentRepository;
 import mate.carsharingapp.repository.rental.RentalRepository;
@@ -69,22 +69,22 @@ class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        car = createCar();
-        user = createUser();
-        rental = createRental(user, car);
+        car = TestUtil.createFirstCar();
+        user = TestUtil.createSecondUser();
+        rental = TestUtil.createClosedRental(user, car);
         authentication = new UsernamePasswordAuthenticationToken(
                 user.getUsername(), user.getPassword());
-        payment = createPayment(rental);
-        expectedPaymentDto = convertPaymentToPaymentDto(payment);
+        payment = TestUtil.createPayment(rental);
+        expectedPaymentDto = TestUtil.convertPaymentToPaymentDto(payment);
         uriComponentsBuilder = UriComponentsBuilder.newInstance();
     }
 
     @DisplayName("Verify createPayment() method works")
     @Test
     void createPayment_Valid_ReturnPaymentDto() {
-        PaymentRequestDto requestDto = new PaymentRequestDto();
-        requestDto.setRentalId(rental.getId());
-        requestDto.setPaymentType(Payment.PaymentType.PAYMENT);
+        PaymentRequestDto requestDto = new PaymentRequestDto()
+                .setRentalId(rental.getId())
+                .setPaymentType(Payment.PaymentType.PAYMENT);
 
         Session mockSession = mock(Session.class);
         when(mockSession.getId()).thenReturn("1A");
@@ -100,8 +100,8 @@ class PaymentServiceTest {
 
         PaymentDto actual = paymentService.createPayment(requestDto, uriComponentsBuilder);
 
-        Assertions.assertNotNull(actual);
-        Assertions.assertEquals(expectedPaymentDto, actual);
+        assertNotNull(actual);
+        assertEquals(expectedPaymentDto, actual);
         verify(rentalRepository).findByIdAndActualReturnDateIsNotNull(requestDto.getRentalId());
         verify(stripeService).createCheckoutSession(any(Rental.class), any(BigDecimal.class),
                 any(UriComponentsBuilder.class));
@@ -125,7 +125,7 @@ class PaymentServiceTest {
 
         Page<PaymentDto> actual = paymentService.findAll(user.getId(), pageable, authentication);
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
         verify(userDetailsService).loadUserByUsername(authentication.getName());
         verify(paymentRepository).findAll(user.getId(), pageable);
         verify(paymentMapper).toDto(payment);
@@ -141,7 +141,7 @@ class PaymentServiceTest {
         EntityNotFoundException actual = Assertions.assertThrows(EntityNotFoundException.class,
                 () -> paymentService.setSuccessPayment(sessionId));
 
-        Assertions.assertEquals(expected, actual.getMessage());
+        assertEquals(expected, actual.getMessage());
         verify(paymentRepository).findBySessionId(sessionId);
     }
 
@@ -159,8 +159,8 @@ class PaymentServiceTest {
 
         String actual = paymentService.setCancelPayment(mockSession);
 
-        Assertions.assertEquals(expectedStatus, payment.getStatus());
-        Assertions.assertEquals(mockSession.getUrl(), actual);
+        assertEquals(expectedStatus, payment.getStatus());
+        assertEquals(mockSession.getUrl(), actual);
     }
 
     @DisplayName("Verify renewPaymentSession() method works")
@@ -180,63 +180,7 @@ class PaymentServiceTest {
         PaymentDto actual = paymentService.renewPaymentSession(
                 payment.getId(), uriComponentsBuilder);
 
-        Assertions.assertEquals(expectedStatus, payment.getStatus());
-        Assertions.assertEquals(expectedPaymentDto, actual);
-    }
-
-    private static Car createCar() {
-        return new Car()
-                .setId(1L)
-                .setModel("Jetta GLI")
-                .setBrand("Volkswagen")
-                .setType(Car.CarType.SEDAN)
-                .setInventory(5)
-                .setDailyFee(BigDecimal.valueOf(149));
-    }
-
-    private static Role createRole() {
-        return new Role()
-                .setId(2L)
-                .setName(Role.RoleName.ROLE_CUSTOMER);
-    }
-
-    private static User createUser() {
-        return new User()
-                .setId(2L)
-                .setEmail("nelia@example.com")
-                .setPassword("user12345")
-                .setFirstName("Nelia")
-                .setLastName("Sydorenko")
-                .setRoles(Set.of(createRole()));
-    }
-
-    private static Rental createRental(User user, Car car) {
-        return new Rental()
-                .setId(1L)
-                .setUser(user)
-                .setCar(car)
-                .setRentalDate(LocalDate.of(2025, 3, 11))
-                .setReturnDate(LocalDate.of(2025, 3, 15))
-                .setActualReturnDate(LocalDate.of(2025, 3, 15));
-    }
-
-    private static Payment createPayment(Rental rental) {
-        return new Payment()
-                .setId(1L)
-                .setRental(rental)
-                .setStatus(Payment.PaymentStatus.PENDING)
-                .setType(Payment.PaymentType.PAYMENT)
-                .setSessionId("1A")
-                .setAmountToPay(new BigDecimal("745.00"));
-    }
-
-    private static PaymentDto convertPaymentToPaymentDto(Payment payment) {
-        return new PaymentDto()
-                .setId(1L)
-                .setStatus(payment.getStatus())
-                .setType(payment.getType())
-                .setSessionUrl(payment.getSessionUrl())
-                .setSessionId(payment.getSessionId())
-                .setAmountToPay(payment.getAmountToPay());
+        assertEquals(expectedStatus, payment.getStatus());
+        assertEquals(expectedPaymentDto, actual);
     }
 }
