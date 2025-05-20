@@ -66,7 +66,7 @@ public class StripeServiceImpl implements StripeService {
         return session;
     }
 
-    @Scheduled(cron = "* * * * *")
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void checkExpiredSessions() {
         List<Payment> pendingPayments = paymentRepository

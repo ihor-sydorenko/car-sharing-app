@@ -14,7 +14,7 @@ public class DailyNotificationService {
     private final RentalRepository rentalRepository;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "30 8 * * *")
+    @Scheduled(cron = "0 30 8 * * *")
     public void sentNotificationAboutOverdueRentals() {
         List<Rental> overdueRentals = rentalRepository
                 .findOverdueRentals(LocalDate.now().plusDays(1));
